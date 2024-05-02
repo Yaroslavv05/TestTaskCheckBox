@@ -17,7 +17,7 @@ class SalesCheck(Base):
     __tablename__ = "sales_checks"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    # user_id = Column(Integer, ForeignKey('users.id'))  # Видалити зовнішній ключ
     created_at = Column(DateTime, default=datetime.utcnow)
     products = relationship("SalesCheckProduct", back_populates="sales_check")
     payment_type = Column(String)

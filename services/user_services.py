@@ -1,6 +1,6 @@
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
 from jose import jwt
+from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from models.user_models import User
 

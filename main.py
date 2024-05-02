@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from models.user_models import User, Token, CreateUser
 from models.sales_models import Product, SalesCheck, SalesCheckProduct, CreateSalesCheck
 from services.user_services import authenticate_user, create_access_token, pwd_context
-from services.sales_services import calculate_sales_check
 from conect_db import get_db
 
 # Ініціалізація FastAPI
@@ -35,27 +34,27 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-# Оновлений ендпоінт для створення чеку продажу
 @app.post("/sales-check", response_model=dict)
 async def create_sales_check(sales_check_data: CreateSalesCheck, db: Session = Depends(get_db)):
-    # Отримання ідентифікатора користувача з токена аутентифікації
-    # Це приклад. Потрібно додати логіку для отримання user_id з токена
-    user_id = 1  # Приклад: тимчасове значення для user_id
-
     # Створення об'єкта чеку продажу
-    sales_check = SalesCheck(user_id=user_id, payment_type=sales_check_data.payment.type, payment_amount=sales_check_data.payment.amount)
+    sales_check = SalesCheck(payment_type=sales_check_data.payment_type, payment_amount=sales_check_data.payment_amount)
 
-    # Додавання товарів до чеку
+    # Додавання товарів до чеку з вхідних даних
     for product_info in sales_check_data.products:
-        product = db.query(Product).filter(Product.name == product_info.name).first()
-        if product:
-            sales_check_product = SalesCheckProduct(product_id=product.id, quantity=product_info.quantity, total=product_info.price * product_info.quantity)
-            sales_check.products.append(sales_check_product)
-        else:
-            raise HTTPException(status_code=404, detail=f"Product '{product_info.name}' not found")
+        product_name = product_info.get("name")
+        product_price = product_info.get("price")
+        product_quantity = product_info.get("quantity")
+
+        # Додати товар до чеку
+        sales_check_product = SalesCheckProduct(product=Product(name=product_name, price=product_price), quantity=product_quantity, total=product_price * product_quantity)
+        sales_check.products.append(sales_check_product)
 
     # Розрахунок загальної суми чеку
-    total = sum(product_info.price * product_info.quantity for product_info in sales_check_data.products)
+    total = sum(product_info.get("price", 0) * product_info.get("quantity", 0) for product_info in sales_check_data.products)
+
+    # Перевірка на наявність достатньої суми для оплати
+    if total > sales_check.payment_amount:
+        raise HTTPException(status_code=400, detail=f"Insufficient funds. Total amount: {total}, Payment amount: {sales_check.payment_amount}")
 
     # Збереження чеку продажу в базу даних
     db.add(sales_check)
@@ -71,9 +70,8 @@ async def create_sales_check(sales_check_data: CreateSalesCheck, db: Session = D
                 "price": product.product.price,
                 "quantity": product.quantity,
                 "total": product.total,
-                "additional_info": product_info.additional_info
             }
-            for product, product_info in zip(sales_check.products, sales_check_data.products)
+            for product in sales_check.products
         ],
         "payment": {
             "type": sales_check.payment_type,
