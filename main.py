@@ -5,10 +5,13 @@ from models.user_models import User, Token, CreateUser
 from models.sales_models import Product, SalesCheck, SalesCheckProduct, CreateSalesCheck
 from services.user_services import authenticate_user, create_access_token, pwd_context
 from conect_db import get_db
+from fastapi import Depends, HTTPException, status
+from services.user_services import get_current_user
 
 # Ініціалізація FastAPI
 app = FastAPI()
 
+# Функція для перевірки токену
 
 # Реєстрація користувача
 @app.post("/register")
@@ -35,7 +38,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @app.post("/sales-check", response_model=dict)
-async def create_sales_check(sales_check_data: CreateSalesCheck, db: Session = Depends(get_db)):
+async def create_sales_check(sales_check_data: CreateSalesCheck, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
     # Створення об'єкта чеку продажу
     sales_check = SalesCheck(payment_type=sales_check_data.payment_type, payment_amount=sales_check_data.payment_amount)
 
