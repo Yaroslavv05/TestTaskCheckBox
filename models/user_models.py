@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
+
 class User(Base):
     __tablename__ = "users"
 
@@ -11,17 +12,4 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
 
-# Клас для моделі вхідних даних для авторизації
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
-# Клас для моделі вхідних даних для створення користувача
-class CreateUser(BaseModel):
-    name: str
-    username: str
-    password: str
-
-# Клас для моделі вхідних даних для авторизації
-class TokenData(BaseModel):
-    username: str

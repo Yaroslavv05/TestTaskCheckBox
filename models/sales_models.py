@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, DateTime
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
-from pydantic import BaseModel
 from .user_models import User
 
 Base = declarative_base()
@@ -13,7 +12,6 @@ class Product(Base):
     name = Column(String, index=True)
     price = Column(Float)
 
-# Модель чеку продажу
 class SalesCheck(Base):
     __tablename__ = "sales_checks"
 
@@ -24,8 +22,6 @@ class SalesCheck(Base):
     payment_type = Column(String)
     payment_amount = Column(Float)
 
-
-# Модель товару в чеку продажу
 class SalesCheckProduct(Base):
     __tablename__ = "sales_check_products"
 
@@ -36,9 +32,3 @@ class SalesCheckProduct(Base):
     total = Column(Float)
     product = relationship("Product")
     sales_check = relationship("SalesCheck", back_populates="products")
-
-# Клас для моделі вхідних даних для створення чеку продажу
-class CreateSalesCheck(BaseModel):
-    products: list[dict]
-    payment_type: str
-    payment_amount: float
