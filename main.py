@@ -4,14 +4,13 @@ from sqlalchemy.orm import Session
 from models.user_models import User, Token, CreateUser
 from models.sales_models import Product, SalesCheck, SalesCheckProduct, CreateSalesCheck
 from services.user_services import authenticate_user, create_access_token, pwd_context
-from conect_db import get_db
+from services.conect_db_services import get_db
 from fastapi import Depends, HTTPException, status
 from services.user_services import get_current_user
 
 # Ініціалізація FastAPI
 app = FastAPI()
 
-# Функція для перевірки токену
 
 # Реєстрація користувача
 @app.post("/register")
@@ -38,35 +37,39 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 
 @app.post("/sales-check", response_model=dict)
-async def create_sales_check(sales_check_data: CreateSalesCheck, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Створення об'єкта чеку продажу
-    sales_check = SalesCheck(payment_type=sales_check_data.payment_type, payment_amount=sales_check_data.payment_amount)
+async def create_sales_check(sales_check_data: CreateSalesCheck, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # Получение ID текущего пользователя
+    user_id = current_user.id
 
-    # Додавання товарів до чеку з вхідних даних
+    # Создание объекта чека продажи с указанием user_id
+    sales_check = SalesCheck(payment_type=sales_check_data.payment_type, payment_amount=sales_check_data.payment_amount, user_id=user_id)
+
+    # Добавление товаров в чек из входных данных
     for product_info in sales_check_data.products:
         product_name = product_info.get("name")
         product_price = product_info.get("price")
         product_quantity = product_info.get("quantity")
 
-        # Додати товар до чеку
+        # Добавить товар в чек
         sales_check_product = SalesCheckProduct(product=Product(name=product_name, price=product_price), quantity=product_quantity, total=product_price * product_quantity)
         sales_check.products.append(sales_check_product)
 
-    # Розрахунок загальної суми чеку
+    # Расчет общей суммы чека
     total = sum(product_info.get("price", 0) * product_info.get("quantity", 0) for product_info in sales_check_data.products)
 
-    # Перевірка на наявність достатньої суми для оплати
+    # Проверка наличия достаточной суммы для оплаты
     if total > sales_check.payment_amount:
         raise HTTPException(status_code=400, detail=f"Insufficient funds. Total amount: {total}, Payment amount: {sales_check.payment_amount}")
 
-    # Збереження чеку продажу в базу даних
+    # Сохранение чека продажи в базе данных
     db.add(sales_check)
     db.commit()
     db.refresh(sales_check)
 
-    # Підготовка відповіді
+    # Подготовка ответа
     response_data = {
         "id": sales_check.id,
+        "user_id": sales_check.user_id,  # Добавлено поле user_id в ответ
         "products": [
             {
                 "name": product.product.name,
