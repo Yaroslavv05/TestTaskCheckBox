@@ -3,7 +3,9 @@ from pydantic import BaseModel
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
-
+'''
+User: SQLAlchemy model for representing users in the database, including ID, name, username, and hashed password.
+'''
 class User(Base):
     __tablename__ = "users"
 

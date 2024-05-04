@@ -5,6 +5,18 @@ from .user_models import User
 
 Base = declarative_base()
 
+'''
+Base: SQLAlchemy declarative base for defining database models.
+
+Product: SQLAlchemy model for representing products in the database, including ID, name, and price.
+
+SalesCheck: SQLAlchemy model for representing sales checks in the database, including ID, user ID, creation timestamp, 
+payment type, payment amount, and relationship with SalesCheckProduct.
+
+SalesCheckProduct: SQLAlchemy model for representing products within a sales check, including ID, sales check ID, product ID,
+quantity, total amount, and relationships with Product and SalesCheck.
+'''
+
 class Product(Base):
     __tablename__ = "products"
 
