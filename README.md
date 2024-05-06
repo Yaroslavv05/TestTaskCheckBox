@@ -1,7 +1,7 @@
 <h1>Як запустити тестове завдання ?</h1>
 
 1. Склонуйте репозиторій проекту:
-[text](https://github.com/Yaroslavv05/TestTaskCheckBox.git)
+https://github.com/Yaroslavv05/TestTaskCheckBox.git
 
 2. Встановіть залежності:
 [text](pip install -r requirements.txt)
