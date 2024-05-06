@@ -14,4 +14,3 @@ async def test_registration_and_login():
         login_response = await client.post("/token", data={"username": "TestUser2", "password": "password123"})
         assert login_response.status_code == 200
         assert "access_token" in login_response.json()
-
