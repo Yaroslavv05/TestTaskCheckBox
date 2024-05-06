@@ -12,7 +12,7 @@ When the `get_db` function is called, it creates a new session using `SessionLoc
 This code snippet is useful for managing database sessions in a SQLAlchemy application.
 """
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:55dnBZ72x@localhost/postgres"
+SQLALCHEMY_DATABASE_URL = "postgresql://username:password@localhost/database_name"
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
